@@ -11,6 +11,7 @@ def home():
 
 @app.route("/api/v1/<station>")
 def station_all_data(station):
+    """ Returns data for one station, all dates """
     print("All DATA")
     filename = "data_small/TG_STAID" + str(station).zfill(6) +".txt"
     df = pd.read_csv(filename, skiprows=20, parse_dates=["    DATE"])
@@ -18,14 +19,22 @@ def station_all_data(station):
     return result
 
 @app.route("/api/v1/<station>/<date>")
-def station_temp_data(station, date):
+def station_date_data(station, date):
+    """ Returns data for one station, one date"""
     filename = "data_small/TG_STAID" + str(station).zfill(6) +".txt"
     df = pd.read_csv(filename, skiprows=20, parse_dates=["    DATE"])
     temperature = df.loc[df['    DATE'] == date]['   TG'].squeeze() / 10
     result = {"station": station, "date": date, "temperature": temperature}
     return result
 
-
+@app.route("/api/v1/yearly/<station>/<year>")
+def yearly_station_data(station, year):
+    """ Returns data for one station, one year"""
+    filename = "data_small/TG_STAID" + str(station).zfill(6) +".txt"
+    df = pd.read_csv(filename, skiprows=20, parse_dates=["    DATE"])
+    df["    DATE"] = df["    DATE"].astype(str)
+    result = df[df["    DATE"].str.startswith(str(year))].to_dict(orient="records")
+    return result
 
 if __name__ == "__main__":
     app.run(debug=True)
